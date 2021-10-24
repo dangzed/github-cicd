@@ -1,0 +1,35 @@
+stages:
+  - deploy
+
+deploy:
+  stage: deploy
+  script:
+    # - sudo apt-get install -y nginx
+    # - sudo mkdir -p /var/www/tapdanhmay.net/static/css/
+    # - sudo mkdir -p /var/log/tapdanhmay/web/nginx/
+    # - sudo mkdir -p /var/www/typemaster.net/static/css/
+    # - sudo mkdir -p /var/log/typemaster/web/nginx/
+    - docker stop insecure-merge || true && docker rm insecure-merge || true
+    - docker build -t dangzed/insecure-merge .
+    - docker push dangzed/insecure-merge
+    - docker pull dangzed/insecure-merge
+    - docker rmi $(docker images -f "dangling=true" -q)
+    - docker run -d -p 8080:8080 --name insecure-merge dangzed/insecure-merge
+    # - sudo cp deploy/tapdanhmay.nginx.conf /etc/nginx/sites-enabled/
+    # - sudo cp deploy/tapdanhmay.net /etc/nginx/sites-enabled/
+    # - sudo cp deploy/typemaster.net /etc/nginx/sites-enabled/
+    # - sudo cp -r deploy/download /var/www/tapdanhmay.net/
+    # - sudo cp -r deploy/download /var/www/typemaster.net/
+    # - sudo cp deploy/ads.txt /var/www/tapdanhmay.net/ads.txt
+    # - sudo cp deploy/ads.txt /var/www/typemaster.net/ads.txt
+    # - sudo cp deploy/robots.txt /var/www/tapdanhmay.net/robots.txt
+    # - sudo cp deploy/robots_typemaster.txt /var/www/typemaster.net/robots.txt
+    # - sudo cp -r src/v2/static/ /var/www/tapdanhmay.net/
+    # - sudo cp -r src/v2/static/ /var/www/typemaster.net/
+    # - sudo docker service ls | grep tapdanhmay_web && sudo docker service rm tapdanhmay_web
+    # - sudo docker stack deploy -c docker-compose.yml tapdanhmay
+    # - sudo service nginx reload
+  tags:
+    - ctf
+  only:
+    - main
