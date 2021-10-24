@@ -15,37 +15,35 @@
 #
 # For more information on GitHub Actions for Azure, refer to https://github.com/Azure/Actions
 # For more samples to get started with GitHub Action workflows to deploy to Azure, refer to https://github.com/Azure/actions-workflow-samples
-on:
+name: This is optional
+
+on:  #all events: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
   push:
     branches:
       - master
 
-env:
-  AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
-  AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
-  NODE_VERSION: '10.x'                # set this to the node version to use
+# env:
+#   AZURE_WEBAPP_NAME: your-app-name    # set this to your application's name
+#   AZURE_WEBAPP_PACKAGE_PATH: '.'      # set this to the path to your web app project, defaults to the repository root
+#   NODE_VERSION: '10.x'                # set this to the node version to use
 
 jobs:
-  build-and-deploy:
+  build-and-deploy: # name of the jobs, arbitrary, enjoy yourself
     name: Build and Deploy
     runs-on: ubuntu-latest
     environment: production
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ env.NODE_VERSION }}
-      uses: actions/setup-node@v2
+    - uses: actions/checkout@v2   # list of actions at https://github.com/actions/ , each action has its own optional parameter. This is official way, but you can uses any action created by anyone you want as long as the repository has action.yml
+      
+    - name: Build and Push docker image
+      # run: docker login docker build docker push etc...      or use uses property (gg search docker build and push actions)
+      uses: mr-smithers-excellent/docker-build-push@v4
       with:
-        node-version: ${{ env.NODE_VERSION }}
-    - name: npm install, build, and test
-      run: |
-        # Build and test the project, then
-        # deploy to Azure Web App.
-        npm install
-        npm run build --if-present
-        npm run test --if-present
-    - name: 'Deploy to Azure WebApp'
-      uses: azure/webapps-deploy@v2
-      with:
-        app-name: ${{ env.AZURE_WEBAPP_NAME }}
-        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        image: dangzed/insecure-merge
+        registry: docker.io
+        username: ${{ secrets.DOCKER_USERNAME }}  # setup secrets in github settings
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+# by default all jobs runs parallel
+  # publish:
+  #   needs: build-and-deploy # this job needs the build-and-deploy run first
